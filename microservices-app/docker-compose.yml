@@ -11,3 +11,9 @@ services:
       - 27017:27017
     volumes:
       - ./mongo-data-4.4:/data/db
+  rmq:
+    image: rabbitmq:3-management
+    restart: always
+    ports:
+      - '15672:15672'
+      - '5672:5672'
