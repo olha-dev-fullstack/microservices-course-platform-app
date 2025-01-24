@@ -4,6 +4,7 @@ import { UserEntity } from '../user/entities/user.entity';
 import { UserRole } from '@microservices-app/interfaces';
 import { JwtService } from '@nestjs/jwt';
 import { AccountRegister } from '@microservices-app/contracts';
+import mongoose from 'mongoose';
 
 @Injectable()
 export class AuthService {
@@ -30,18 +31,20 @@ export class AuthService {
 
   async validateUser(email: string, password: string) {
     const user = await this.userRepository.findUser(email);
+
     if (!user) {
       throw new Error('Wrong credentials');
     }
     const userEntity = new UserEntity(user);
+
     const isCorrectPassword = await userEntity.validatePassword(password);
     if (!isCorrectPassword) {
       throw new Error('Wrong credentials');
     }
-    return { id: user._id };
+    return { id: user._id.toString() };
   }
 
   async login(id: string) {
-    return { access_token: await this.jwtService.signAsync(id) };
+    return { access_token: await this.jwtService.signAsync({ id }) };
   }
 }
