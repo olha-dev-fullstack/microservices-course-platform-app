@@ -1,11 +1,13 @@
 import { PassportModule } from '@nestjs/passport';
 import {
+  IDomainEvent,
   IUser,
   IUserCourses,
   PurchaseState,
   UserRole,
 } from '@microservices-app/interfaces';
 import { genSalt, hash, compare } from 'bcryptjs';
+import { AccountChangedCourse } from '@microservices-app/contracts';
 
 export class UserEntity implements IUser {
   _id?: string;
@@ -14,6 +16,7 @@ export class UserEntity implements IUser {
   passwordHash: string;
   role: UserRole;
   courses?: IUserCourses[];
+  events: IDomainEvent[] = [];
 
   constructor(user: IUser) {
     this._id = user._id;
@@ -59,6 +62,11 @@ export class UserEntity implements IUser {
       }
       return c;
     });
+    this.events.push({
+      topic: AccountChangedCourse.topic,
+      data: { courseId, userId: this._id, state },
+    });
+    return this;
   }
   public updateCourseStatus(courseId: string, state: PurchaseState) {
     this.courses = this.courses.map((c) => {
