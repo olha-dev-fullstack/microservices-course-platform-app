@@ -1,4 +1,3 @@
-import { PassportModule } from '@nestjs/passport';
 import {
   IDomainEvent,
   IUser,
@@ -28,7 +27,7 @@ export class UserEntity implements IUser {
   }
 
   public addCourse(courseId: string) {
-    const exists = this.courses.find((c) => c._id === courseId);
+    const exists = this.courses.find((c) => c.courseId === courseId);
     if (exists) {
       throw new Error('This course already exists');
     }
@@ -39,11 +38,11 @@ export class UserEntity implements IUser {
   }
 
   public deleteCourse(courseId: string) {
-    this.courses = this.courses.filter((c) => c._id !== courseId);
+    this.courses = this.courses.filter((c) => c.courseId !== courseId);
   }
 
   public setCourseStatus(courseId: string, state: PurchaseState) {
-    const exist = this.courses.find((c) => c._id === courseId);
+    const exist = this.courses.find((c) => c.courseId === courseId);
     if (!exist) {
       this.courses.push({
         courseId,
@@ -52,11 +51,11 @@ export class UserEntity implements IUser {
       return this;
     }
     if (state === PurchaseState.Cancelled) {
-      this.courses = this.courses.filter((c) => c._id !== courseId);
+      this.courses = this.courses.filter((c) => c.courseId !== courseId);
       return this;
     }
     this.courses = this.courses.map((c) => {
-      if (c._id === courseId) {
+      if (c.courseId === courseId) {
         c.purchaseState = state;
         return c;
       }
@@ -70,12 +69,19 @@ export class UserEntity implements IUser {
   }
   public updateCourseStatus(courseId: string, state: PurchaseState) {
     this.courses = this.courses.map((c) => {
-      if (c._id === courseId) {
+      if (c.courseId === courseId) {
         c.purchaseState = state;
         return c;
       }
       return c;
     });
+  }
+
+  public getCourseState(courseId: string): PurchaseState {
+    return (
+      this.courses.find((c) => c.courseId === courseId)?.purchaseState ??
+      PurchaseState.Started
+    );
   }
 
   public getPublicProfile() {
